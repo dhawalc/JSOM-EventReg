@@ -1,0 +1,77 @@
+<script 
+    src="//ajax.aspnetcdn.com/ajax/4.0/1/MicrosoftAjax.js" 
+    type="text/javascript">
+</script>
+<script
+    type="text/javascript"
+    src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.2.min.js">
+</script>
+<script type="text/javascript">
+    var hostweburl;
+
+    // Load the required SharePoint libraries.
+    $(document).ready(function () {
+
+        // Get the URI decoded URLs.
+        hostweburl =
+            decodeURIComponent(
+                getQueryStringParameter("SPHostUrl")
+        );
+
+        // The js files are in a URL in the form:
+        // web_url/_layouts/15/resource_file
+        var scriptbase = hostweburl + "/_layouts/15/";
+
+        // Load the js files and continue to
+        // the execOperation function.
+        $.getScript(scriptbase + "SP.Runtime.js",
+            function () {
+                $.getScript(scriptbase + "SP.js", execOperation);
+            }
+        );
+    });
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+ 
+ 
+ // SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createListItem);//makes sure sp.js is loaded and then calls createListItem method
+ 
+    function createListItem() {
+        var clientContext = new SP.ClientContext.get_current();//if the page and the list are in same site.If list is in different site then use relative url instead of get_current
+        var oList = clientContext.get_web().get_lists().getByTitle('Registration');
+        var ID = getParameterByName('ID');
+        var myParam = location.search.split('ID=')[1];
+
+        var itemCreateInfo = new SP.ListItemCreationInformation();
+        this.oListItem = oList.addItem(itemCreateInfo);
+        oListItem.set_item('Title', 'My New Item!');
+        oListItem.set_item('CourseID', ID);
+        oListItem.update();
+
+        clientContext.load(oListItem);
+        clientContext.executeQueryAsync(
+            Function.createDelegate(this, this.onQuerySucceeded), 
+            Function.createDelegate(this, this.onQueryFailed)
+        );
+    }
+
+    function onQuerySucceeded() {
+        alert('Item created: ' + oListItem.get_id() + ID);
+    }
+
+    function onQueryFailed(sender, args) {
+        alert('Request failed. ' + args.get_message() + 
+            '\n' + args.get_stackTrace());
+    }
+
+    </script>
+
+    <input type="button" value="Register Here" id="btnSub" onclick="createListItem();" />

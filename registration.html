@@ -1,0 +1,34 @@
+<script src=" " type="text/javascript"></script>
+<script type="text/javascript">
+ $(document).ready(function() 
+ {
+  ExecuteOrDelayUntilScriptLoaded(AddListItem, "sp.js");
+ });
+
+function AddListItem(){
+    var ListName = "MyList";
+    var context = new SP.ClientContext.get_current(); // the current context is taken by default here
+    //you can also create a particular site context as follows
+    //var context = new SP.ClientContext('/Sites/site1');
+    var lstObject = context.get_web().get_lists().getByTitle(ListName);
+    var listItemCreationInfo = new SP.ListItemCreationInformation();
+    var newItem = lstObject.addItem(listItemCreationInfo);
+    newItem.set_item('Title', 'This is new item');
+    // set values to other columns of the list here
+    newItem.update();
+    context.executeQueryAsync(Function.createDelegate(this, this.onSuccess),
+        Function.createDelegate(this, this.onFailure));
+ 
+     function onSuccess() {
+ 
+        alert('Item created: ' + newItem.get_id());
+    }
+ 
+    function onFailure(sender, args) {
+ 
+        alert('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace());
+    }
+}
+
+</script>
+<input type="button" value="submit" id="btnSub" onclick="AddListItem();" />
